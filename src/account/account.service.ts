@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Body, Delete, Get, HttpException, HttpStatus, Injectable, Param, Patch, Post } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import CreateAccountDto from './dto/create-account.dto';
@@ -12,12 +12,14 @@ export class AccountService {
     @InjectRepository(Account)
     private accountRepository: Repository<Account>
   ) {}
-  async create(accountData: CreateAccountDto) {
+  @Post('/account')
+  async create(@Body() accountData: CreateAccountDto) {
     const newAccount = await this.accountRepository.create(accountData);
     await this.accountRepository.save(newAccount)
     return newAccount;
   }
 
+  @Get('/accont/:id')
   async getById(id: number) {
     const account = await this.accountRepository.findOne({where: { id }});
     if (account) {
@@ -26,11 +28,13 @@ export class AccountService {
     throw new HttpException('Nem létezik számla ezzel az azonosítóval', HttpStatus.NOT_FOUND);
   }
 
-  update(id: number, updateAccountDto: UpdateAccountDto) {
-    return `This action updates a #${id} account`;
+  @Patch('/account/:id')
+  update(@Param('id') id: number, @Body() updateAccountDto: UpdateAccountDto) {
+    return this.accountRepository.update(+id, updateAccountDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} account`;
+  @Delete('/account/:id')
+  remove(@Param('id') id: number) {
+    return this.accountRepository.remove(Account[+id])
   }
 }
